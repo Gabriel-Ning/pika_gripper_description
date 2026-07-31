@@ -1,0 +1,1 @@
+# pika_gripper_description
