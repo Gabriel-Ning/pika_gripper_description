@@ -1,0 +1,9 @@
+# Actuated finger travel [m]. gripper_right_joint mimics gripper_left_joint.
+# 0 = open mount pose; positive closes toward center.
+# upper MUST be measured on the real gripper (nominal 0.05 is a placeholder).
+gripper_left_joint:
+  limit:
+    lower: 0.0
+    upper: 0.05
+    velocity: 5.0
+    effort: 100.0
