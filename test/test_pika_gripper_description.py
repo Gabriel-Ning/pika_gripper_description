@@ -22,11 +22,15 @@ REQUIRED_PATHS = [
     "docs/MESH_SOURCES.md",
     "launch/visualize_pika_gripper.launch.py",
     "rviz/visualize_pika_gripper.rviz",
+    "urdf/franka_pika_adaptor.xacro",
+    "urdf/marvin_pika_adaptor.xacro",
     "urdf/pika_gripper.xacro",
     "urdf/pika_gripper.ros2_control.xacro",
     "urdf/pika_gripper_standalone.urdf.xacro",
     "meshes/gripper_base_link.STL",
     "meshes/pika_finray_link.STL",
+    "meshes/pika_adaptor/pika_franka_adaptor.STL",
+    "meshes/pika_adaptor/pika_marvin_adaptor.STL",
     "README.md",
 ]
 
@@ -98,3 +102,56 @@ def test_standalone_matches_limits_and_mimic() -> None:
         "pika_fisheye_link",
         "pika_d405_link",
     } <= links
+
+
+def test_prefix_scopes_links_and_joints() -> None:
+    """Dual-gripper hosts need left_/right_ prefixes without name collisions."""
+    import tempfile
+
+    snippet = f"""<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dual_pika">
+  <xacro:include filename="{SOURCE_ROOT / 'urdf' / 'pika_gripper.xacro'}"/>
+  <link name="flange_L"/>
+  <link name="flange_R"/>
+  <xacro:pika_gripper prefix="left_" parent="flange_L">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:pika_gripper>
+  <xacro:pika_gripper prefix="right_" parent="flange_R">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:pika_gripper>
+</robot>
+"""
+    with tempfile.NamedTemporaryFile("w", suffix=".urdf.xacro", delete=False) as handle:
+        handle.write(snippet)
+        path = handle.name
+    try:
+        result = subprocess.run(
+            ["xacro", path],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        Path(path).unlink(missing_ok=True)
+
+    root = ET.fromstring(result.stdout)
+    joint_names = {j.get("name") for j in root.findall("joint")}
+    link_names = {link.get("name") for link in root.findall("link")}
+    assert "left_gripper_left_joint" in joint_names
+    assert "right_gripper_left_joint" in joint_names
+    assert "left_gripper_base_link" in link_names
+    assert "right_gripper_base_link" in link_names
+    assert "left_pika_gripper_tcp" in link_names
+    assert "right_pika_gripper_tcp" in link_names
+    right_mimic = next(
+        j for j in root.findall("joint") if j.get("name") == "right_gripper_right_joint"
+    ).find("mimic")
+    assert right_mimic.get("joint") == "right_gripper_left_joint"
+
+
+def test_visualize_launch_defers_model_poses_to_xacro() -> None:
+    source = (SOURCE_ROOT / "launch" / "visualize_pika_gripper.launch.py").read_text(
+        encoding="utf-8"
+    )
+    for name in ("xyz", "rpy", "tcp_xyz", "tcp_rpy"):
+        assert f'DeclareLaunchArgument("{name}", default_value="")' in source

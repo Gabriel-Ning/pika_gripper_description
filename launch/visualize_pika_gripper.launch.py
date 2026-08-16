@@ -12,13 +12,16 @@ from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 import xacro
-import yaml
 
 
-def _load_tcp_defaults(share: str) -> tuple[str, str]:
-    with open(f"{share}/config/gripper_tcp.yaml", encoding="utf-8") as stream:
-        tcp = yaml.safe_load(stream)
-    return str(tcp["origin"]["xyz"]), str(tcp["origin"]["rpy"])
+def _optional_xacro_args(context: LaunchContext, *names):
+    """Forward launch args to xacro only when the user set them."""
+    mappings = {}
+    for name in names:
+        value = context.perform_substitution(LaunchConfiguration(name))
+        if value:
+            mappings[name] = value
+    return mappings
 
 
 def _spawn_publishers(context: LaunchContext):
@@ -29,10 +32,7 @@ def _spawn_publishers(context: LaunchContext):
 
     mappings = {
         "use_fake_hardware": "true",
-        "tcp_xyz": context.perform_substitution(LaunchConfiguration("tcp_xyz")),
-        "tcp_rpy": context.perform_substitution(LaunchConfiguration("tcp_rpy")),
-        "xyz": context.perform_substitution(LaunchConfiguration("xyz")),
-        "rpy": context.perform_substitution(LaunchConfiguration("rpy")),
+        **_optional_xacro_args(context, "xyz", "rpy", "tcp_xyz", "tcp_rpy"),
     }
     robot_description = xacro.process_file(xacro_path, mappings=mappings).toprettyxml(
         indent="  "
@@ -67,16 +67,15 @@ def _spawn_publishers(context: LaunchContext):
 
 def generate_launch_description() -> LaunchDescription:
     share = get_package_share_directory("pika_gripper_description")
-    tcp_xyz_default, tcp_rpy_default = _load_tcp_defaults(share)
     use_rviz = LaunchConfiguration("use_rviz")
     rviz_config = PathJoinSubstitution([share, "rviz", "visualize_pika_gripper.rviz"])
 
     return LaunchDescription(
         [
-            DeclareLaunchArgument("xyz", default_value="0 0 0"),
-            DeclareLaunchArgument("rpy", default_value="0 0 0"),
-            DeclareLaunchArgument("tcp_xyz", default_value=tcp_xyz_default),
-            DeclareLaunchArgument("tcp_rpy", default_value=tcp_rpy_default),
+            DeclareLaunchArgument("xyz", default_value=""),
+            DeclareLaunchArgument("rpy", default_value=""),
+            DeclareLaunchArgument("tcp_xyz", default_value=""),
+            DeclareLaunchArgument("tcp_rpy", default_value=""),
             DeclareLaunchArgument("use_joint_state_gui", default_value="true"),
             DeclareLaunchArgument("use_rviz", default_value="true"),
             DeclareLaunchArgument(

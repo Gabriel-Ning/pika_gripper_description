@@ -3,6 +3,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="pika_gripper_standalone">
 
   <xacro:arg name="serial_port" default="/dev/ttyUSB0"/>
+  <xacro:arg name="max_width" default="0.045"/>
   <xacro:arg name="use_fake_hardware" default="true"/>
   <xacro:arg name="xyz" default="0 0 0"/>
   <xacro:arg name="rpy" default="0 0 0"/>
@@ -23,6 +24,7 @@
 
   <xacro:pika_gripper_ros2_control
     serial_port="$(arg serial_port)"
+    max_width="$(arg max_width)"
     use_fake_hardware="$(arg use_fake_hardware)"/>
 
 </robot>
