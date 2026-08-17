@@ -101,10 +101,10 @@
     </link>
 
     <joint name="${prefix}gripper_left_joint" type="prismatic">
-      <origin xyz="0.08851 0 0.0815" rpy="0 0 0"/>
+      <origin xyz="0.04351 0 0.0815" rpy="0 0 0"/>
       <parent link="${prefix}gripper_base_link"/>
       <child link="${prefix}gripper_left_link"/>
-      <axis xyz="-1 0 0"/>
+      <axis xyz="1 0 0"/>
       <limit
         lower="${finger_lim['lower']}"
         upper="${finger_lim['upper']}"
@@ -138,10 +138,10 @@
     </link>
 
     <joint name="${prefix}gripper_right_joint" type="prismatic">
-      <origin xyz="-0.088529 0 0.0815" rpy="0 0 -3.14159"/>
+      <origin xyz="-0.043529 0 0.0815" rpy="0 0 -3.14159"/>
       <parent link="${prefix}gripper_base_link"/>
       <child link="${prefix}gripper_right_link"/>
-      <axis xyz="-1 0 0"/>
+      <axis xyz="1 0 0"/>
       <limit
         lower="${finger_lim['lower']}"
         upper="${finger_lim['upper']}"
