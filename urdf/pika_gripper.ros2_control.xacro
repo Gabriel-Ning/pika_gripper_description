@@ -22,7 +22,9 @@
       serial_port:=/dev/ttyUSB0
       use_fake_hardware:=false
       joint_limits_file:=''
-      max_width:=''">
+      max_width:=''
+      stale_warn_s:=0.2
+      stale_error_s:=0.5">
 
     <xacro:property name="limits_cfg_hw"
       value="${xacro.load_yaml(joint_limits_file) if joint_limits_file != '' else pika_joint_limits_hw}"/>
@@ -42,6 +44,8 @@
           <param name="serial_port">${serial_port}</param>
           <!-- ROS finger-travel upper clamp [m]; opening on wire ≈ 2×. -->
           <param name="max_width">${max_width_v}</param>
+          <param name="stale_warn_s">${stale_warn_s}</param>
+          <param name="stale_error_s">${stale_error_s}</param>
         </xacro:unless>
       </hardware>
 
