@@ -50,7 +50,7 @@ Drag `gripper_left_joint`; `gripper_right_joint` follows (mimic ×1).
 Actuated joint: `${prefix}gripper_left_joint`.
 
 For FR3 flange (`*_link8`), include the adaptor first (full assembly entry:
-`franka_manipulation_controller_bringup/urdf/fr3_manipulation.urdf.xacro`):
+`franka_manipulation/rt_launch/urdf/fr3_manipulation.urdf.xacro`):
 
 ```xml
 <xacro:include filename="$(find pika_gripper_description)/urdf/franka_pika_adaptor.xacro"/>
