@@ -18,6 +18,13 @@
     </joint>
 
     <link name="${prefix}pika_adaptor_link">
+      <inertial>
+        <origin xyz="-0.01065 0.00003 0.00338" rpy="0 0 0"/>
+        <mass value="0.05"/>
+        <inertia
+          ixx="1.304E-05" ixy="1.072E-07" ixz="-7.348E-07"
+          iyy="3.212E-05" iyz="3.888E-09" izz="4.432E-05"/>
+      </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
